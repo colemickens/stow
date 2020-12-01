@@ -21,7 +21,16 @@ func (l *location) Close() error {
 
 // CreateContainer creates a new container (bucket)
 func (l *location) CreateContainer(name string) (stow.Container, error) {
-	bucket, err := l.client.CreateBucket(name, backblaze.AllPrivate)
+	return l.createContainer(name, backblaze.AllPrivate)
+}
+
+// CreatePublicContainer creates a new container (bucket)
+func (l *location) CreatePublicContainer(name string, allowListing bool) (stow.Container, error) {
+	panic("not implemented for b2")
+}
+
+func (l *location) createContainer(name string, level backblaze.BucketType) (stow.Container, error) {
+	bucket, err := l.client.CreateBucket(name, level)
 	if err != nil {
 		return nil, err
 	}

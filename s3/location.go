@@ -2,6 +2,8 @@ package s3
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"net/url"
 	"strings"
 	"time"
@@ -25,6 +27,18 @@ type location struct {
 // The bare minimum needed is a container name, but there are many other
 // options that can be provided.
 func (l *location) CreateContainer(containerName string) (stow.Container, error) {
+	return l.createContainer(containerName, false, false)
+}
+
+// CreateContainer creates a new container, in this case an S3 bucket.
+// The bare minimum needed is a container name, but there are many other
+// options that can be provided. The bucket is configured to allow public
+// access to blobs, and if allowListing is true, list container contents.
+func (l *location) CreatePublicContainer(containerName string, allowListing bool) (stow.Container, error) {
+	return l.createContainer(containerName, true, allowListing)
+}
+
+func (l *location) createContainer(containerName string, public, allowListing bool) (stow.Container, error) {
 	createBucketParams := &s3.CreateBucketInput{
 		Bucket: aws.String(containerName), // required
 	}
@@ -43,6 +57,37 @@ func (l *location) CreateContainer(containerName string) (stow.Container, error)
 		customEndpoint: l.customEndpoint,
 	}
 
+	if public {
+		actions := []string{"s3:GetObject"}
+		if allowListing {
+			actions = append(actions, "s3:ListBucket")
+		}
+		readOnlyAnonUserPolicy := map[string]interface{}{
+			"Version": "2012-10-17",
+			"Statement": []map[string]interface{}{
+				{
+					"Sid":       "AddPerm",
+					"Effect":    "Allow",
+					"Principal": "*",
+					"Action":    actions,
+					"Resource": []string{
+						fmt.Sprintf("arn:aws:s3:::%s/*", containerName),
+					},
+				},
+			},
+		}
+		policy, err := json.Marshal(readOnlyAnonUserPolicy)
+		if err != nil {
+			return nil, err
+		}
+		_, err = l.client.PutBucketPolicy(&s3.PutBucketPolicyInput{
+			Bucket: aws.String(containerName),
+			Policy: aws.String(string(policy)),
+		})
+		if err != nil {
+			return nil, err
+		}
+	}
 	return newContainer, nil
 }
 

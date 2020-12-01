@@ -34,6 +34,11 @@ func (l *location) CreateContainer(containerName string) (stow.Container, error)
 	}, nil
 }
 
+// CreatePublicContainer creates a new container, in this case a directory on the remote server.
+func (l *location) CreatePublicContainer(containerName string, allowListing bool) (stow.Container, error) {
+	return l.CreateContainer(containerName)
+}
+
 // Containers returns a slice of the Container interface, a cursor, and an error.
 func (l *location) Containers(prefix, cursor string, count int) ([]stow.Container, string, error) {
 	infos, err := l.sftpClient.ReadDir(l.config.basePath)

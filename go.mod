@@ -1,5 +1,7 @@
 module github.com/graymeta/stow
 
+go 1.15
+
 require (
 	github.com/Azure/azure-sdk-for-go v32.5.0+incompatible
 	github.com/Azure/go-autorest/autorest v0.9.0 // indirect

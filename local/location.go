@@ -49,6 +49,10 @@ func (l *location) CreateContainer(name string) (stow.Container, error) {
 	}, nil
 }
 
+func (l *location) CreatePublicContainer(name string, allowListing bool) (stow.Container, error) {
+	return l.CreateContainer(name)
+}
+
 func (l *location) Containers(prefix string, cursor string, count int) ([]stow.Container, string, error) {
 	path, ok := l.config.Config(ConfigKeyPath)
 	if !ok {

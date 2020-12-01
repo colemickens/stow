@@ -34,6 +34,9 @@ func (l *testLocation) Close() error {
 func (l *testLocation) CreateContainer(name string) (stow.Container, error) {
 	return nil, nil
 }
+func (l *testLocation) CreatePublicContainer(name string, allowListing bool) (stow.Container, error) {
+	return nil, nil
+}
 func (l *testLocation) RemoveContainer(id string) error {
 	return nil
 }

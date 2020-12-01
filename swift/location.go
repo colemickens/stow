@@ -19,7 +19,21 @@ func (l *location) Close() error {
 }
 
 func (l *location) CreateContainer(name string) (stow.Container, error) {
-	err := l.client.ContainerCreate(name, nil)
+	return l.createContainer(name, false, false)
+}
+func (l *location) CreatePublicContainer(name string, allowListing bool) (stow.Container, error) {
+	return l.createContainer(name, true, allowListing)
+}
+func (l *location) createContainer(name string, public bool, allowListing bool) (stow.Container, error) {
+	var headers swift.Headers
+	if public {
+		val := ".r:*"
+		if allowListing {
+			val += ",.rlistings"
+		}
+		headers["X-Container-Read"] = val
+	}
+	err := l.client.ContainerCreate(name, headers)
 	if err != nil {
 		return nil, err
 	}

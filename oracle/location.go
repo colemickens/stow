@@ -33,6 +33,12 @@ func (l *location) CreateContainer(name string) (stow.Container, error) {
 	return container, nil
 }
 
+// CreatePublicContainer creates a new container with the given name while returning a
+// container instance with the given information.
+func (l *location) CreatePublicContainer(name string, allowListing bool) (stow.Container, error) {
+	panic("not implemented for oracle")
+}
+
 // Containers returns a collection of containers based on the given prefix and cursor.
 func (l *location) Containers(prefix, cursor string, count int) ([]stow.Container, string, error) {
 	params := &swift.ContainersOpts{

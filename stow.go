@@ -57,6 +57,11 @@ type Location interface {
 	// CreateContainer creates a new Container with the
 	// specified name.
 	CreateContainer(name string) (Container, error)
+	// CreatePublicContainer creates a new Container with the
+	// specified name. The container is configured to allow public
+	// read access. If allowListing is true, public users can also list the
+	// container contents.
+	CreatePublicContainer(name string, allowListing bool) (Container, error)
 	// Containers gets a page of containers
 	// with the specified prefix from this Location.
 	// The specified cursor is a pointer to the start of

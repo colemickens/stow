@@ -27,10 +27,34 @@ func (l *Location) Close() error {
 
 // CreateContainer creates a new container, in this case a bucket.
 func (l *Location) CreateContainer(containerName string) (stow.Container, error) {
+	return l.createContainer(containerName, false, false)
+}
 
+// CreatePublicContainer creates a new container, in this case a bucket.
+func (l *Location) CreatePublicContainer(containerName string, allowListing bool) (stow.Container, error) {
+	return l.createContainer(containerName, true, allowListing)
+}
+
+func (l *Location) createContainer(containerName string, public, allowListing bool) (stow.Container, error) {
 	projId, _ := l.config.Config(ConfigProjectId)
+
+	var defaultObjectACL []*storage.ObjectAccessControl
+	if public {
+		role := "roles/storage.legacyObjectReader"
+		if allowListing {
+			role = "roles/storage.objectReader"
+		}
+		defaultObjectACL = []*storage.ObjectAccessControl{{
+			Entity: "allUsers",
+			Role:   role,
+		}}
+	}
 	// Create a bucket.
-	_, err := l.client.Buckets.Insert(projId, &storage.Bucket{Name: containerName}).Do()
+
+	_, err := l.client.Buckets.Insert(projId, &storage.Bucket{
+		Name:             containerName,
+		DefaultObjectAcl: defaultObjectACL,
+	}).Do()
 	//res, err := l.client.Buckets.Insert(projId, &storage.Bucket{Name: containerName}).Do()
 	if err != nil {
 		return nil, err

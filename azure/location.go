@@ -20,7 +20,21 @@ func (l *location) Close() error {
 }
 
 func (l *location) CreateContainer(name string) (stow.Container, error) {
-	err := l.client.GetContainerReference(name).Create(&az.CreateContainerOptions{Access: az.ContainerAccessTypeBlob})
+	return l.createContainer(name, az.ContainerAccessTypeBlob)
+}
+
+func (l *location) CreatePublicContainer(name string, allowListing bool) (stow.Container, error) {
+	var accessLevel az.ContainerAccessType
+	if allowListing {
+		accessLevel = az.ContainerAccessTypeContainer
+	} else {
+		accessLevel = az.ContainerAccessTypeBlob
+	}
+	return l.createContainer(name, accessLevel)
+}
+
+func (l *location) createContainer(name string, accessLevel az.ContainerAccessType) (stow.Container, error) {
+	err := l.client.GetContainerReference(name).Create(&az.CreateContainerOptions{Access: accessLevel})
 	if err != nil {
 		if strings.Contains(err.Error(), "ErrorCode=ContainerAlreadyExists") {
 			return l.Container(name)
