@@ -198,10 +198,13 @@ func (l *location) Container(id string) (stow.Container, error) {
 	// does not support s3session.GetBucketRegion().
 	if endpoint, endpointSet := l.config.Config(ConfigEndpoint); !endpointSet && endpoint == "" {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		bucketRegion, _ = s3manager.GetBucketRegionWithClient(ctx, l.client, id)
+		var err error
+		bucketRegion, err = s3manager.GetBucketRegionWithClient(ctx, l.client, id)
+		if err != nil {
+			return nil, errors.Wrapf(err, "Container, couldn't determine bucket region: %s", err)
+		}
 		cancel()
 
-		var err error
 		client, _, err = newS3Client(l.config, bucketRegion)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Container, creating new client for region: %s", bucketRegion)
