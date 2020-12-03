@@ -38,19 +38,12 @@ func (l *Location) CreatePublicContainer(containerName string, allowListing bool
 func (l *Location) createContainer(containerName string, public, allowListing bool) (stow.Container, error) {
 	projId, _ := l.config.Config(ConfigProjectId)
 
-	var defaultObjectACL []*storage.ObjectAccessControl
-	if public {
-		role := "roles/storage.legacyObjectReader"
-		if allowListing {
-			role = "roles/storage.objectReader"
-		}
-		defaultObjectACL = []*storage.ObjectAccessControl{{
-			Entity: "allUsers",
-			Role:   role,
-		}}
-	}
-	// Create a bucket.
+	defaultObjectACL := []*storage.ObjectAccessControl{{
+		Entity: "allUsers",
+		Role:   "READER",
+	}}
 
+	// Create a bucket.
 	_, err := l.client.Buckets.Insert(projId, &storage.Bucket{
 		Name:             containerName,
 		DefaultObjectAcl: defaultObjectACL,
